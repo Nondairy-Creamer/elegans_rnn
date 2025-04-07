@@ -11,7 +11,7 @@ num_neurons = data_train['emissions'][0].shape[1]
 input_size = num_neurons
 batch_size = 5
 num_layers = 1
-num_time = 100
+num_time = 20
 
 rnn = nn.LSTM(input_size, num_neurons, num_layers)
 inputs = torch.randn(num_time, batch_size, input_size)

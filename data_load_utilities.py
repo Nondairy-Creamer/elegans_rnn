@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import torch
 
 
 def load_data(data_folder):
@@ -36,3 +37,11 @@ def load_data(data_folder):
 
     return data_train, data_test
 
+def get_data_snips(emissions, num_time):
+    snips = []
+
+    for em in emissions:
+        em_torch = torch.tensor(em)
+        snips.append(em.unfold(0, num_time, 1))
+
+    return torch.cat(snips, axis=0)
