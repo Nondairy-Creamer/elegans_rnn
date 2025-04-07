@@ -37,11 +37,30 @@ def load_data(data_folder):
 
     return data_train, data_test
 
-def get_data_snips(emissions, num_time):
-    snips = []
 
-    for em in emissions:
-        em_torch = torch.tensor(em)
-        snips.append(em.unfold(0, num_time, 1))
+def get_data_snips(data, num_time, stride=1):
+    inputs_array = []
+    targets_array = []
 
-    return torch.cat(snips, axis=0)
+    for emi, inp in zip(data['emissions'], data['inputs']):
+        # convert the data to tensors
+        emi_torch = torch.tensor(emi, dtype=torch.float32)
+        inp_torch = torch.tensor(inp, dtype=torch.float32)
+
+        # unfold it: this takes windows of size num_time from the data
+        emi_snips = emi_torch[:-1, :].unfold(0, num_time, stride)
+        inp_snips = inp_torch[:-1, :].unfold(0, num_time, stride)
+
+        # the inputs to the RNN will be the concatenated measured data and the opto stimulation events
+        inputs_array.append(torch.cat((emi_snips, inp_snips), dim=1))
+
+        # the target is just the next data point
+        targets_array.append(emi_torch[num_time:, :].unfold(0, 1, stride))
+
+    data_snips = {
+        'inputs': torch.cat(inputs_array, axis=0),
+        'targets': torch.cat(targets_array, axis=0),
+    }
+
+    return data_snips
+
